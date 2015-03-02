@@ -423,7 +423,8 @@ syntax KResult ::= CatchImpl
 syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:
-    (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
+//    (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
+    (try B:Block KRs:CatchClauses => B ~> catchBlocks(KRs))
     when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses
