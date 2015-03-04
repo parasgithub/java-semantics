@@ -251,6 +251,7 @@ syntax KItem ::= paramTypesResolved( KListWrap )              [function]
 rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
 rule paramTypesResolved([.KList]) => true
 
+// Why necessarily public?
 rule [AbstractMethodDec]:
     'AbstractMethodDec(_:K,, Ks:KList)
     =>  'MethodDec(
@@ -270,11 +271,15 @@ syntax KItem ::=  storeMethod (
                 Type         //method return type
               )
 
+// takes out the synchronized modifier for synchronized method and adds a synchronized (this) surrounding the body of the method
+// (for instance methods)
 rule [storeMethod-Synchronized-method-inst-desugar]:
     storeMethod(_, instanceCT, _, (true => false)::bool, _,_,
         Body:K => 'Synchronized('This(.KList),, Body),
         _,_)
 
+// takes out the synchronized modifier for synchronized method and adds a synchronized (ClassName) surrounding the body of the method
+// (for static methods)
 rule [storeMethod-Synchronized-method-static-desugar]:
     <k>
       storeMethod(_, staticCT, _, (true => false)::bool, _,_,
@@ -307,9 +312,11 @@ rule [storeMethod]:
 when
     notBool (Sig in keys(Env) andBool MMT ==K constructorMMT)
 
-/*@ Discard the default consturctor that was added by the rule [processTypeDecsInPCUPhase-ClassDec]
+/*@ Discard the default constructor that was added by the rule [processTypeDecsInPCUPhase-ClassDec]
     if this class already has a default constructor.
 */
+
+// What if someone writes a no-param constructor, won't it discard that?
 rule [storeMethod-discard-default-constructor]:
     <k>
       storeMethod([.KList],_,_,_, constructorMMT, _,_, Sig:Signature, _) => .

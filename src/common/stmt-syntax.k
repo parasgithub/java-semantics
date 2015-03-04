@@ -38,6 +38,10 @@ syntax WhileStmt ::= "while" "(" Exp ")" Stmt                      [strict(1),kl
 
 syntax ForStmt ::= "for" "(" LocalVarDec ";" OptionalExp ";" Exps ")" Stmt      [klabel('For)]
 syntax ForStmt ::= "for" "(" Exps ";" OptionalExp ";" Exps ")" Stmt             [klabel('For)]
+//syntax ForStmt ::= "for" "(" StatementExpressionList ";" OptionalExp ";" Exps ")" Stmt             [klabel('For)]
+//syntax StatementExpressionList ::= List{StatementExpression, ","}
+//syntax StatementExpression ::= Exps iff type of exp = ...
+
 syntax ForStmt ::= "for" "(" Param ":" Exp ")" Stmt                             [klabel('ForEach)]
 
 syntax LabeledStmt ::= Id ":" Stmt                                              [klabel('Labeled)]
@@ -52,7 +56,7 @@ syntax AssertStmt ::= "assert" Exp ";"                              [strict, kla
 syntax SwitchStmt  ::= "switch" "(" Exp ")" SwitchBlock             [strict(1), klabel('Switch)]
 syntax SwitchBlock ::= "{" SwitchGroupList SwitchLabelList "}"      [klabel('SwitchBlock)]
 syntax SwitchGroup ::= SwitchLabelList BlockStmList                 [klabel('SwitchGroup)]
-syntax SwitchLabel ::= "case" Exp ":"                               [klabel('Case)]
+syntax SwitchLabel ::= "case" Exp ":"                               [strict, klabel('Case)]
 		             | "default"  ":"                               [klabel('Default)]
 
 syntax DoStmt ::= "do" Stmt "while" "(" Exp ")" ";"                 [strict(2), klabel('DoWhile)]

@@ -114,46 +114,70 @@ rule [AssertStm-FirstFalse]:
 
 //@ \subsection{Switch statement}
 
-
 syntax KItem ::= switchImpl (
-             TypedVal, // TV - switch argument
-             KListWrap, // switch body - list of 'SwitchGroup labels
-             K // DefaultStm - default block, if any
-             )
+             Exp, // switch argument
+             SwitchGroupList, // switch body - list of 'SwitchGroup labels
+             BlockStmList, // DefaultStm - default block, if any
+             SwitchGroupList // everything following default block
+             ) [strict(1(result(TypedVal)))]
 
+syntax KItem ::= "switchEnd"
+
+syntax KItem ::= addToEnd (SwitchGroupList, SwitchGroup)
+
+rule [AddToEndSwitchGroupList]:
+    addToEnd(Hd:SwitchGroup Tl:SwitchGroupList, S:SwitchGroup) => (Hd addToEnd(Tl, S))
+
+rule [AddToEndSwitchGroupList2]:
+    addToEnd(.SwitchGroupList, S:SwitchGroup) => S
+
+// goes from switch to switchImpl, taking the trailing labels and adding them as an empty switch group
+// the default block is for now empty and will be filled when we go through the switch groups and find one that has a default label
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    'Switch(TV:TypedVal,, 'SwitchBlock([Ks:KList],, TrailingLabels:K))
-    => switchImpl(TV, [Ks,, 'SwitchGroup(TrailingLabels,, .K)], .K)
+    (switch(E:Exp) { S:SwitchGroupList T:SwitchLabelList })
+    => switchImpl(E, addToEnd(S, 'SwitchGroup(T,, .BlockStmList)), .BlockStmList, .SwitchGroupList)
+//    => switchImpl(E, S 'SwitchGroup(T,, .BlockStmList), .BlockStmList, .SwitchGroupList)
     ~> switchEnd
 
-context switchImpl( _,[ 'SwitchGroup(['Case(HOLE),,_:KList],,_),, _:KList ], _)
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
 a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
 rule [switchImpl-CaseNotMatch]:
-    switchImpl(V:RawVal :: _,[ 'SwitchGroup([ ( 'Case(V2:RawVal :: _) => .KList ),, _:KList ],,_),, _],_)
+    switchImpl(V :: _,
+//               'SwitchGroup( ('Case(V2 :: _) => .SwitchLabelList) OtherLabels:SwitchLabelList ,, _:BlockStmList)
+               'SwitchGroup( (('Case(V2 :: _) OtherLabels:SwitchLabelList) => (OtherLabels)) ,, _:BlockStmList)
+               Rest:SwitchGroupList, _ , _ )
     when V =/=K V2
 
 /*@Once case of first switch group matches, the whole switch is replaced
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 rule [switchImpl-CaseMatch]:
-    switchImpl(V:RawVal :: _, ['SwitchGroup(['Case(V :: _),,_:KList],,S:K),, Ks:KList], _) => [S,,Ks]
+    switchImpl(V:RawVal :: _,
+               'SwitchGroup('Case(V :: _) OtherLabels:SwitchLabelList ,, S:BlockStmList)
+               Rest: SwitchGroupList, _ , _ ) => (S ~> Rest)
 
+// moves the default to the third argument of switchImpl
+// moves all remaining stuff to fourth argument of switchImpl
 rule [switchImpl-DefaultSave]:
-    switchImpl(TV:TypedVal, ['SwitchGroup([('Default(_) => .KList ),, _:KList],, S:K),, Ks:KList],( _:K => [S,, Ks]))
+    switchImpl(TV:TypedVal,
+//              'SwitchGroup(('Default(_) => .SwitchLabelList ) OtherLabels:SwitchLabelList,, S:BlockStmList)
+              'SwitchGroup((('Default(_) OtherLabels:SwitchLabelList) => (OtherLabels)),, S:BlockStmList)
+              Rest:SwitchGroupList,
+              (.BlockStmList =>  S),
+              (.SwitchGroupList => Rest))
 
 rule [switchImpl-SwitchGroup-Discard]:
-    switchImpl( TV:TypedVal, [('SwitchGroup([ .KList ],,_) => .KList ),, _], _)
+    switchImpl(TV:TypedVal,
+//               (('SwitchGroup(.SwitchLabelList ,, _:BlockStmList) => .SwitchGroupList) _:SwitchGroupList), _, _)
+               (('SwitchGroup(.SwitchLabelList ,, _:BlockStmList) Rest:SwitchGroupList) => (Rest)), _, _)
 
 rule [switchImpl-Default-Exec]:
-    switchImpl( _, [.KList], DefaultStm:K) => DefaultStm
+    switchImpl( _, .SwitchGroupList, DefaultStm:BlockStmList, AfterDef:SwitchGroupList) => (DefaultStm ~> AfterDef)
 
 rule [SwitchGroup-Exec]:
-    'SwitchGroup(_:K,, S:K) => S
-
-syntax KItem ::= "switchEnd"
+    'SwitchGroup(_:SwitchLabelList,, S:BlockStmList) => S
 
 rule [switchEnd-Discard]:
     switchEnd => .K
@@ -186,6 +210,7 @@ rule [stm-KListWrap-exp]:
     stm([E:Exp,, Es:KList]) => E; ~> stm([Es])
     when getKLabel(E) ==KLabel 'cast                                     [structural]
 
+// There is a rule that converts the LocalVarDec label into T:Type X:Id; and the whole thing is of type K
 rule [stm-KListWrap-LocalVarDec]:
     stm([K:K,,Ks:KList]) => [K,,Ks]
     when notBool ( getKLabel(K) ==KLabel 'cast )                         [structural]
@@ -194,6 +219,7 @@ rule [For-FirstArgV1Red]:
     'For(([InitExps:KList] => stm([InitExps])),,_:KList)                 [structural]
 
 //Works also in elaboration phase
+
 rule [For-FirstArgV2Red]:
     'For(('LocalVarDec(Ks:KList) => stm(['LocalVarDec(Ks)])),,_:KList)   [structural]
 
@@ -344,10 +370,7 @@ rule [Throw-checkCatch-True]:
 //    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl(Param:Param, CatchS:K) _:CatchClauses)
-    => 'Block([
-          initParams(Param, TV),,
-          CatchS
-        ])
+    => 'Block([initParams(Param, TV),, CatchS])
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
@@ -387,6 +410,7 @@ rule [Throw-CausesThreadTermination]:
 
 //@ \subsection{Try statement}
 
+// Why are there two trys?
 rule [Try-Catch-Finally-Desugar]:
     try TryS:K Catches finally FinallyS:K
     => try 'Block(try TryS Catches) .CatchClauses finally FinallyS
@@ -401,6 +425,8 @@ context try _ HOLE
 //resolve 'Param term of the catch clause
 context catch(HOLE)_                                [result(ExtKResult)]
 
+// converts from Param to ParamImpl (the only difference is the syntax and the fact that ParamImpl has no modifiers)
+// called when the params inside catch are being resolved
 rule 'Param(_,, K:Type,, X:Id) => K X               [structural]
 
 rule catch(KR:ParamImpl)S => catchImpl(KR,S)
@@ -418,8 +444,10 @@ rule isExtKResult('ParamImpl(T:Type,, _:Id)) => true
 syntax CatchImpl ::=  catchImpl (
                       K,  //'Param(...),
                       K   //the code block
-                    )
+                   )
 syntax KResult ::= CatchImpl
+// after this statements there will be two types of catch clauses
+// CatchImpl(ParamImpl, Block) and 'Catch(Param, Block)
 syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:

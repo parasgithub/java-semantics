@@ -18,7 +18,7 @@ rule isVarDecHolderLabel('Block) => true
 rule isVarDecHolderLabel('For) => true
 rule isVarDecHolderLabel('Catch) => true
 
-/*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For of 'Catch
+/*@ In addition to what defaul elab heating does, when we heat the first argument of 'Block, 'For or 'Catch
 we need to save a copy of elaboration environment - e.g. the last entry of <elabEnv> <localTypes>.
 This is because these statements are blocks that might declare local variables.
 */

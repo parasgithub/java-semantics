@@ -39,14 +39,14 @@ syntax Exps         ::= List{Exp, ","} [seqstrict]
 syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [strict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
-syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
+syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauses), strict]
 syntax Params       ::= List{Param, ","}
 
 syntax KLabel::= "'DimList"
                | "'DimExprList"
                | "'ExprList"
                | "'VarInitList"
-               | "'CatchClauseList"
+               | "'CatchClauses"
                | "'FormalParamList"
 
 syntax UserList     ::= BlockStmList
@@ -157,6 +157,7 @@ rule    'MethodDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamL
 rule    'MethodDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 
 //"{" BlockStmList "}" -> Block {cons("Block")}
+// rules/macros to change Block to KListWrap removed/commented
 rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [macro]
 rule    'Block(('.List`{""`}(.KList) => [.KList])) [macro]
 
@@ -238,9 +239,9 @@ rule    'QNewInstance(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 //macros for changing CatchClauseList to KListWrap are removed
 
 //"{" SwitchGroupList SwitchLabelList "}" -> SwitchBlock {cons("SwitchBlock")}
-rule    'SwitchBlock(('SwitchGroupList(SG) => toKListWrap('SwitchGroupList(SG))),,_) [macro]
-rule    'SwitchBlock(_,,('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL)))) [macro]
-rule    'SwitchBlock(_,,('.List`{""`}(.KList) => [.KList]),,_) [macro]
+//rule    'SwitchBlock(('SwitchGroupList(SG) => toKListWrap('SwitchGroupList(SG))),,_) [macro]
+//rule    'SwitchBlock(_,,('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL)))) [macro]
+//rule    'SwitchBlock(_,,('.List`{""`}(.KList) => [.KList]),,_) [macro]
 
 // SwitchLabelPlusList BlockStmPlusList -> SwitchGroup  {cons("SwitchGroup")}
 rule    'SwitchGroup(('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL))),,_)    [macro]

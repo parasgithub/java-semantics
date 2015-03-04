@@ -55,6 +55,7 @@ static initializers of a class and perform the following transformations:
     compute the type of the current expression itself. When the expression is fully elaborated, it is wrapped into
     elabRes(). This is the step that requires custom rules for most AST terms.
       elabRes('Minus(cast(int,cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE)
+      elabRes(cast(int, 'Minus(cast(int, localVar(X))))) ~> elab('CastRef(\_,, HOLE) <- shouldn't it be like this?
   7. Elaboration cooling. Once the top K Item was wrapped into elabRes, it is ready to be cooled back into its original
     context:
       elab('CastRef(\_,, elabRes('Minus(cast(int,cast(int, localVar(X)))))))
