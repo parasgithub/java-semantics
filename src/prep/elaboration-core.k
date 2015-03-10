@@ -3,6 +3,7 @@ module ELABORATION-CORE
     imports SUBTYPING
     imports ELABORATION-CATEGORIES
     imports ELABORATION-EXPRESSIONS // for isExpressionLabel
+    imports ELABORATION-STATEMENTS // for isExpressionLabel
 
 /*@
 Elaborate the composition of code blocks of a class - the last step of preprocessing.

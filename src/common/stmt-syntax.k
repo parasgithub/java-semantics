@@ -56,7 +56,7 @@ syntax AssertStmt ::= "assert" Exp ";"                              [strict, kla
 syntax SwitchStmt  ::= "switch" "(" Exp ")" SwitchBlock             [strict(1), klabel('Switch)]
 syntax SwitchBlock ::= "{" SwitchGroupList SwitchLabelList "}"      [klabel('SwitchBlock)]
 syntax SwitchGroup ::= SwitchLabelList BlockStmList                 [klabel('SwitchGroup)]
-syntax SwitchLabel ::= "case" Exp ":"                               [strict, klabel('Case)]
+syntax SwitchLabel ::= "case" Exp ":"                               [strict(1(result(TypedVal))), klabel('Case)]
 		             | "default"  ":"                               [klabel('Default)]
 
 syntax DoStmt ::= "do" Stmt "while" "(" Exp ")" ";"                 [strict(2), klabel('DoWhile)]

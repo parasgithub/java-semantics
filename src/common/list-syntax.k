@@ -145,7 +145,6 @@ rule    'CompilationUnit(_,,('ImportDecList(I) => toKListWrap('ImportDecList(I))
 rule    'CompilationUnit(_,,('.List`{""`}(.KList) => [.KList]),,_) [macro]
 rule    'CompilationUnit(_,,('TypeDecList(T) => toKListWrap('TypeDecList(T))))[macro]
 
-
 // "{" ClassBodyDecList "}" -> ClassBody {cons("ClassBody")}
 rule    'ClassBody(('ClassBodyDecList(C) => toKListWrap('ClassBodyDecList(C)))) [macro]
 rule    'ClassBody(('.List`{""`}(.KList) => [.KList])) [macro]
@@ -157,9 +156,10 @@ rule    'MethodDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamL
 rule    'MethodDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 
 //"{" BlockStmList "}" -> Block {cons("Block")}
-// rules/macros to change Block to KListWrap removed/commented
-rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [macro]
-rule    'Block(('.List`{""`}(.KList) => [.KList])) [macro]
+//rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [macro]
+//rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [anywhere]
+//rule    'Block(('.List`{""`}(.KList) => [.KList])) [macro]
+//rule    'Block(('.List`{""`}(.KList) => [.KList])) [anywhere]
 
 //MethodSpec "(" ExprList ")" -> Expr {cons("Invoke")}
 rule    'Invoke(_,,('ExprList(Exps) => toKListWrap('ExprList(Exps)))) [macro]
@@ -244,9 +244,8 @@ rule    'QNewInstance(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 //rule    'SwitchBlock(_,,('.List`{""`}(.KList) => [.KList]),,_) [macro]
 
 // SwitchLabelPlusList BlockStmPlusList -> SwitchGroup  {cons("SwitchGroup")}
-rule    'SwitchGroup(('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL))),,_)    [macro]
-rule    'SwitchGroup(_,,('BlockStmList(B) => toKListWrap('BlockStmList(B))))    [macro]
-
+//rule    'SwitchGroup(('SwitchLabelList(SL) => toKListWrap('SwitchLabelList(SL))),,_)    [macro]
+//rule    'SwitchGroup(_,,('BlockStmList(B) => toKListWrap('BlockStmList(B))))    [macro]
 
 //AnnoList "package" PackageName ";" -> PackageDec {cons("PackageDec")}
 rule    'PackageDec(('AnnoList(A) => toKListWrap('AnnoList(A))),,_) [macro]

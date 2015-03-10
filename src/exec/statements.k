@@ -121,31 +121,42 @@ syntax KItem ::= switchImpl (
              SwitchGroupList // everything following default block
              ) [strict(1(result(TypedVal)))]
 
-syntax KItem ::= "switchEnd"
+context switchImpl( _, ('SwitchGroup('Case(HOLE) _:SwitchLabelList,, _:BlockStmList) _:SwitchGroupList), _ , _ )
+context switchImpl( _, ('SwitchGroup('Default(HOLE) _:SwitchLabelList,, _:BlockStmList) _:SwitchGroupList), _ , _ )
 
-syntax KItem ::= addToEnd (SwitchGroupList, SwitchGroup)
+syntax KItem ::= "switchEnd"
+syntax KItem ::= "Debug"
+syntax KItem ::= addToEnd (SwitchGroupList, SwitchGroup) [function]
 
 rule [AddToEndSwitchGroupList]:
     addToEnd(Hd:SwitchGroup Tl:SwitchGroupList, S:SwitchGroup) => (Hd addToEnd(Tl, S))
 
 rule [AddToEndSwitchGroupList2]:
-    addToEnd(.SwitchGroupList, S:SwitchGroup) => S
+    addToEnd(.SwitchGroupList, S:SwitchGroup) => (S .SwitchGroupList)
 
 // goes from switch to switchImpl, taking the trailing labels and adding them as an empty switch group
 // the default block is for now empty and will be filled when we go through the switch groups and find one that has a default label
 //@ The switchEnd in the right-hand side of => is required to properly interact with break.
 rule [Switch]:
-    (switch(E:Exp) { S:SwitchGroupList T:SwitchLabelList })
-    => switchImpl(E, addToEnd(S, 'SwitchGroup(T,, .BlockStmList)), .BlockStmList, .SwitchGroupList)
-//    => switchImpl(E, S 'SwitchGroup(T,, .BlockStmList), .BlockStmList, .SwitchGroupList)
+    (switch(T:TypedVal) { S:SwitchGroupList TrailingLabels:SwitchLabelList })
+    => switchImpl(T, addToEnd(S, 'SwitchGroup(TrailingLabels,, .BlockStmList)), .BlockStmList, .SwitchGroupList)
     ~> switchEnd
+
+/*rule [Switch2]:
+//    (switch(T:TypedVal) { S:SwitchGroupList TrailingLabels:K })
+//    ('Switch(T:TypedVal,, 'SwitchBlock(_,, A:SwitchLabelList)))
+//    (switch(T:TypedVal) { A:K B })
+//    (switch(T:TypedVal) { 'SwitchGroupList(A,, C) B })
+//    (switch(T:TypedVal) { A:SwitchGroupList B })
+//S:SwitchGroupList TrailingLabels:K )
+    => Debug ~> A ~> Debug
+*/
 
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
 a switch statement must be assignable (�5.2) to the type of the switch Expression.*/
 rule [switchImpl-CaseNotMatch]:
     switchImpl(V :: _,
-//               'SwitchGroup( ('Case(V2 :: _) => .SwitchLabelList) OtherLabels:SwitchLabelList ,, _:BlockStmList)
                'SwitchGroup( (('Case(V2 :: _) OtherLabels:SwitchLabelList) => (OtherLabels)) ,, _:BlockStmList)
                Rest:SwitchGroupList, _ , _ )
     when V =/=K V2
@@ -153,24 +164,32 @@ rule [switchImpl-CaseNotMatch]:
 /*@Once case of first switch group matches, the whole switch is replaced
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
+
+rule [executeBlockStmList]:
+    'BlockStmList(Hd,,Tl:BlockStmList) => (Hd ~> Tl)
+
+rule [executeSwitchGroupList]:
+    'SwitchGroupList(Hd,,Tl:SwitchGroupList) => (Hd ~> Tl)
+
+rule [executeBlockStmList2]:
+    '.List`{""`}(.KList) => .K
+
 rule [switchImpl-CaseMatch]:
     switchImpl(V:RawVal :: _,
                'SwitchGroup('Case(V :: _) OtherLabels:SwitchLabelList ,, S:BlockStmList)
-               Rest: SwitchGroupList, _ , _ ) => (S ~> Rest)
+               Rest:SwitchGroupList, _ , _ ) => ('Block(S) ~> Rest)
 
 // moves the default to the third argument of switchImpl
 // moves all remaining stuff to fourth argument of switchImpl
 rule [switchImpl-DefaultSave]:
     switchImpl(TV:TypedVal,
-//              'SwitchGroup(('Default(_) => .SwitchLabelList ) OtherLabels:SwitchLabelList,, S:BlockStmList)
               'SwitchGroup((('Default(_) OtherLabels:SwitchLabelList) => (OtherLabels)),, S:BlockStmList)
               Rest:SwitchGroupList,
-              (.BlockStmList =>  S),
+              (.BlockStmList => S),
               (.SwitchGroupList => Rest))
 
 rule [switchImpl-SwitchGroup-Discard]:
     switchImpl(TV:TypedVal,
-//               (('SwitchGroup(.SwitchLabelList ,, _:BlockStmList) => .SwitchGroupList) _:SwitchGroupList), _, _)
                (('SwitchGroup(.SwitchLabelList ,, _:BlockStmList) Rest:SwitchGroupList) => (Rest)), _, _)
 
 rule [switchImpl-Default-Exec]:
@@ -249,7 +268,6 @@ rule [StackConsumerStmt-RestoreEnv]:
 //@ \subsection{Break statement}
 
 rule [Break-UnlabeledPropagate]:
-   // 'Break('None(_)) ~> (KL:KLabel(_) => .)
     break 'None(_); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
@@ -258,14 +276,12 @@ when
     andBool KL =/=KLabel 'switchEnd
 
 rule [Break-Unlabeled]:
-    //'Break('None(_)) ~> KL:KLabel(_) => .
     break 'None(_); ~> KL:KLabel(_) => .
 when
            KL ==KLabel 'whileImpl
     orBool KL ==KLabel 'switchEnd
 
 rule [Break-LabeledPropagate]:
-   // 'Break('Some(X:Id)) ~> (KL:KLabel(_) => .)
     break 'Some(X:Id); ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
@@ -273,19 +289,16 @@ when
     andBool KL =/=KLabel 'labeledImpl
 
 rule [BreakLabeledNotMatch]:
-    //'Break('Some(X1:Id)) ~> (labeledImpl(X2:Id) => .)
     break 'Some(X1:Id); ~> (labeledImpl(X2:Id) => .)
 when
     X1 =/=K X2
 
 rule [Break-LabeledMatch]:
-    //'Break('Some(X:Id)) ~> labeledImpl(X:Id) => .
     break 'Some(X:Id); ~> labeledImpl(X:Id) => .
 
 //@ \subsection{Continue statement}
 
 rule [Continue-Propagate]:
-//    'Continue(_) ~> (KL:KLabel(_) => .)
     continue _; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
@@ -293,23 +306,19 @@ when
     andBool KL =/=KLabel 'whileImpl
 
 rule [Continue-Unlabeled]:
-//    ('Continue('None(_)) => .) ~> whileImpl(_,_)
    (continue 'None(_); => .) ~> whileImpl(_,_)
 
 rule [Continue-LabeledMeetsWhile]:
     <k>
-//      (. => getWhileLabel(Rest)) ~> 'Continue('Some(X:Id)) ~> whileImpl(_,_) ~> Rest:K
       (. => getWhileLabel(Rest)) ~> continue 'Some(X:Id); ~> whileImpl(_,_) ~> Rest:K
     </k>
 
 rule [Continue-LabeledNotMatch]:
-//    (whileLabel(LabelK:K) => .) ~> 'Continue('Some(X:Id)) ~> (whileImpl(_,_) => .)
     (whileLabel(LabelK:K) => .) ~> continue 'Some(X:Id); ~> (whileImpl(_,_) => .)
 when
     LabelK =/=K X
 
 rule [Continue-LabeledMatch]:
-//    whileLabel(X) ~> 'Continue('Some(X:Id)) => .
     whileLabel(X) ~> continue 'Some(X:Id); => .
 
 /*@ Auxiliary constructs used in the semantics of continue.
@@ -336,19 +345,16 @@ expected type. */
 context return 'Some(HOLE);
 
 rule [Return-None-Desugar]:
-//    'Return('None(_)) => 'Return('Some(nothing :: void))
     return 'None(_); => return 'Some(nothing :: void);
         [structural]
 
 rule [Return-Propagate]:
-//    'Return('Some(TV:TypedVal)) ~> (KL:KLabel(Ks:KList) => .K)
     return 'Some(TV:TypedVal); ~> (KL:KLabel(Ks:KList) => .K)
 when
             KL =/=KLabel 'env
     andBool KL =/=KLabel 'finallyBlock
 
 rule [Return-MethodEnd]:
-//    <k> 'Return('Some(TV:TypedVal)) => TV ~> K </k>
     <k> return 'Some(TV:TypedVal); => TV ~> K </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
     <methodContext> _:Bag => MethContext </methodContext>
@@ -358,7 +364,6 @@ Exceptions are propagated now until a catch that can bind them is
 encountered. */
 rule [Throw]:
     (. => checkCatch(subtype(typeOf(TV), T)))
-//    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl('ParamImpl(T:Type,, X:Id),_) _:CatchClauses)
 
@@ -367,23 +372,19 @@ context checkCatch(HOLE)
 
 rule [Throw-checkCatch-True]:
     checkCatch(true::bool)
-//    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl(Param:Param, CatchS:K) _:CatchClauses)
     => 'Block([initParams(Param, TV),, CatchS])
 
 rule [Throw-checkCatch-False]:
     (checkCatch(false::bool) => .)
-//    ~> 'Throw(TV:TypedVal)
     ~> throw TV:TypedVal;
     ~> catchBlocks(catchImpl(_,_) C:CatchClauses => C)
 
 rule [Throw-catchBlocks-EmptyDiscard]:
-//    'Throw(TV:TypedVal) ~> (catchBlocks([.KList]) => .)
     throw TV:TypedVal; ~> (catchBlocks(.CatchClauses) => .)
 
 rule [Throw-Propagate]:
-//    'Throw(TV:TypedVal) ~> (KL:KLabel(_) => .)
     throw TV:TypedVal; ~> (KL:KLabel(_) => .)
 when
             KL =/=KLabel 'env
@@ -392,7 +393,6 @@ when
 
 rule [Throw-MethodEnd]:
     <k>
-//      'Throw(TV:TypedVal) ~> (. => K)
       throw TV:TypedVal; ~> (. => K)
     </k>
     <stack> ListItem( sl(K:K, MethContext:Bag) ) => . ...</stack>
@@ -400,7 +400,6 @@ rule [Throw-MethodEnd]:
 
 rule [Throw-CausesThreadTermination]:
     <k>
-//      'Throw(TV:TypedVal)
       throw TV:TypedVal;
       =>  'Field( class String2Id("java.lang.System"),, String2Id("out") )
             .String2Id("println")
@@ -451,8 +450,7 @@ syntax KResult ::= CatchImpl
 syntax CatchClause ::= CatchImpl
 
 rule [Try-Catch]:
-//    (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
-    (try B:Block KRs:CatchClauses => B ~> catchBlocks(KRs))
+    (try TryS:K KRs:CatchClauses => TryS ~> catchBlocks(KRs))
     when isKResult(KRs)
 
 /*@ The auxiliary construct that holds catch clauses

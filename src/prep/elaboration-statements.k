@@ -30,6 +30,8 @@ when
     isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
 
 //Seqstrict starting from 2-nd argument.
+// Having three terms in the KList in the second argument ensures that
+// the list is at least of length 2.
 rule [customElabHeating-For-next-children]:
     customElabHeating('For, [HeadKs:KList,, KPrec:K,, KHole:K]) => isElabKList([HeadKs,,KPrec])
 
@@ -41,6 +43,14 @@ rule [elabEnd-Block-For-Catch]:
     elabEnd(KL:KLabel(ElabResL:KList)) => removeLastElabEnv ~> elabRes(KL(ElabResL))
 when
     isVarDecHolderLabel(KL) ==K true
+
+syntax KItem ::= "Debugs"
+
+rule [sequentialHeating]:
+    customElabHeating('BlockStmList, [B:KList,, KHole:K]) => isElabKList([B])
+
+//rule [sequentialHeating2]:
+//    <k> customElabHeating('BlockStmList, [B:K,, KHole:K]) => (Debugs ~> true) ... </k>
 
 //@ Local var declarations desugaring
 

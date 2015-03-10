@@ -209,6 +209,9 @@ rule defaultElabHeating('Id) => true*/
 //Auxiliary functions that should be default-heated
 rule defaultElabHeating('stmtAndExp) => true
 rule defaultElabHeating('CatchClauses) => true
+rule defaultElabHeating('SwitchGroupList) => true
+rule defaultElabHeating('SwitchLabelList) => true
+//rule defaultElabHeating('BlockStmList) => true
 
 /*@ Naked terms are those that should be computed directly into KResult during elaboration.
   Those are literals, types and packages. They are heated "as is", without being wrapped into elab().
@@ -235,7 +238,7 @@ rule isElabNaked('Lit(InnerKL:KLabel(_))) => InnerKL =/=KLabel 'Class
   Since all the automatic elaboration-related rules are an incredible mess, we have to put all the AST terms into this
     cathegory one by one, and eliminate automatic elaboration heating/cooling rules altogether.
 */
-syntax KItem ::= customElabChildren ( KLabel )                [function]
+/*syntax KItem ::= customElabChildren ( KLabel )                [function]
 rule customElabChildren(KL:KLabel) =>
            (KL ==KLabel 'KListWrap)       //Elaboration left-to-right if children contain variable declarations
     orBool (KL ==KLabel 'Block)           //Allocation of new <elabEnv>
@@ -247,5 +250,5 @@ rule customElabChildren(KL:KLabel) =>
     orBool (KL ==KLabel 'ClassDecStm)     //Elaboration of inner 'ClassDec
     orBool (KL ==KLabel 'NewInstance)     //Elaboration of qualifier, only at elab() step, anonymous body.
     orBool (KL ==KLabel 'QNewInstance)    //Elaboration of name into class, anonymous body.
-
+*/
 endmodule

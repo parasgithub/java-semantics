@@ -66,6 +66,7 @@ SEARCH_TIMEOUT_FACTOR=2
 MODE=run-exec
 PREP_OUTPUT=raw
 OUTPUT=pretty
+#OUTPUT=raw
 PREP_INPUT=java
 INPUT=kast
 
@@ -171,6 +172,9 @@ while [[ ${1:0:1} == - ]]; do
       ;;
 
 # Extra options
+    "--raw")
+      OUTPUT=raw
+      ;;
     "--pattern")
       PATTERN=${VALUE}
       ;;
