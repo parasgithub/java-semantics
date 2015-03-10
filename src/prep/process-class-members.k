@@ -228,28 +228,27 @@ the only difference is the addition of the types.  */
 context 'MethodDec('MethodDecHead(_:K,, _:K,, HOLE,, _),, _)
 
 //Resolve parameter types
-context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _:K),, _:K)
+context 'MethodDec('MethodDecHead(_:K,, _:K,, _:Type,, _:Id,, HOLE,, _:K),, _:K) [result(Params)]
 
 rule [MethodDec]:
     <k>
       'MethodDec(
-        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,
-            [Params:KList],, _:K
+        'MethodDecHead(Modifiers:KListWrap,, _:K,, ReturnType:Type,, Name:Id,,Params:Params,, _:K
         ),,
         Body:K //could be 'Block([...]) or 'NoMethodBody
       )
-      => storeMethod([Params],
+      => storeMethod(Params,
             getContextType(Modifiers), getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), methodMMT, noValue, Body,
-            sig(Name, getTypes([Params])), ReturnType)
+            sig(Name, getTypes(Params)), ReturnType)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when
-    paramTypesResolved([Params])                            [structural]
-
-syntax KItem ::= paramTypesResolved( KListWrap )              [function]
-rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
-rule paramTypesResolved([.KList]) => true
+//when
+//    paramTypesResolved([Params])                            [structural]
+//
+//syntax KItem ::= paramTypesResolved( KListWrap )              [function]
+//rule paramTypesResolved([('Param(_:K,, T:Type,, _:Id) => .KList),, _])
+//rule paramTypesResolved([.KList]) => true
 
 // Why necessarily public?
 rule [AbstractMethodDec]:
@@ -260,7 +259,7 @@ rule [AbstractMethodDec]:
         )
 
 syntax KItem ::=  storeMethod (
-                KListWrap,   //[Params]
+                Params,   //[Params]
                 ContextType, //will evaluate to ContextType - staticCT or instanceCT
                 AccessMode,  //will evaluate to AccessMode
                 TypedVal,    //IsSync:bool - whether method is synchronized or not
@@ -291,7 +290,7 @@ rule [storeMethod-Synchronized-method-static-desugar]:
 
 rule [storeMethod]:
     <k>
-      storeMethod([Params:KList], CT:ContextType, Acc:AccessMode, false::bool, MMT:MethodMetaType, FirstLine:K,
+      storeMethod(Params, CT:ContextType, Acc:AccessMode, false::bool, MMT:MethodMetaType, FirstLine:K,
                   Body:K, Sig:Signature, ReturnType:Type) => .
       ...
     </k>
@@ -301,7 +300,7 @@ rule [storeMethod]:
     ( .Bag => <methodDec>
                      <methodSignature> Sig </methodSignature>
                      <methodReturnType> ReturnType </methodReturnType>
-                     <methodParams> [Params] </methodParams>
+                     <methodParams> Params </methodParams>
                      <methodConstrFirstLine> FirstLine </methodConstrFirstLine>
                      <methodBody> Body </methodBody>
                      <methodAccessMode> Acc </methodAccessMode>
@@ -319,7 +318,7 @@ when
 // What if someone writes a no-param constructor, won't it discard that?
 rule [storeMethod-discard-default-constructor]:
     <k>
-      storeMethod([.KList],_,_,_, constructorMMT, _,_, Sig:Signature, _) => .
+      storeMethod(.Params,_,_,_, constructorMMT, _,_, Sig:Signature, _) => .
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
@@ -363,14 +362,14 @@ when
     Class ==K classObject
 
 //Resolve parameter types
-context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, [_,, 'Param(_:K,, HOLE,,_:K),, _],, _),, _:K)
+context 'ConstrDec('ConstrDecHead(_:K,, _:K,, _:Id,, HOLE,, _),, _:K)   [result(Params)]
 
 rule [ConstrDec]:
     <k>
-      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, [Params:KList],, _),,
+      'ConstrDec('ConstrDecHead(Modifiers:KListWrap,, _:K,, Name:Id,, Params:Params,, _),,
           'ConstrBody(
         'Some(FirstLine:K) ,,[BodyKs:KList]))
-      => storeMethod([Params],
+      => storeMethod(Params,
           instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
           'Block([
 
@@ -382,11 +381,11 @@ rule [ConstrDec]:
             #fi,,
             BodyKs
           ]),
-          sig(getConsName(Class), getTypes([Params])), void)
+          sig(getConsName(Class), getTypes(Params)), void)
       ...
     </k>
     <crntClass> Class:ClassType </crntClass>
-when paramTypesResolved([Params])
+//when paramTypesResolved([Params])
 
 // 'FieldDec(Modifiers:K,, T:Type,, ['VarDec(X:Id,, InitExp:K),, _])
 
@@ -498,7 +497,7 @@ syntax KItem ::= "convertInstanceInitIntoMethod"
 rule [convertInstanceInitIntoMethod]:
     <k>
       convertInstanceInitIntoMethod
-      => storeMethod([.KList], instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
+      => storeMethod(.Params, instanceCT, private, false::bool, methodMMT, noValue, 'Block([InstanceInitKs]),
                       sig(String2Id("$instance_init"), types(.KList)), void)
       ...
     </k>
