@@ -201,8 +201,8 @@ rule [localEnvObjectBuild]:
             LocalEnvClass,
             AccessibleLocalEnv
          )
-      ~> appendToElabBuffer(elab(
-            'LocalVarDec('None(.KList),, LocalEnvClass,, ['VarDec(
+      ~> appendToElabBuffer(
+            elab('LocalVarDec('None(.KList),, LocalEnvClass,, ['VarDec(
               generateLocalEnvVarName(LocalEnvClass),,
               'NewInstance('None(.KList),, LocalEnvClass,, [.KList],, 'None(.KList) )
             )])
