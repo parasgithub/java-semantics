@@ -130,6 +130,7 @@ rule defaultElabHeating('Return) => true
 rule defaultElabHeating('Throw) => true
 rule defaultElabHeating('Synchronized) => true
 rule defaultElabHeating('Try) => true
+rule defaultElabHeating('LocalVarDecStm) => true
     /*orBool (KL ==KLabel 'Catch)
 rule defaultElabHeating('LocalVarDecStm) => true
 rule defaultElabHeating('LocalVarDec) => true

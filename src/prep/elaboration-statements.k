@@ -49,64 +49,9 @@ syntax KItem ::= "Debugs"
 rule [sequentialHeating]:
     customElabHeating('BlockStmList, [B:KList,, KHole:K]) => isElabKList([B])
 
-//@ Local var declarations desugaring
-
-//rule [elab-LocalVarDecStm-desugar]:
-//    elab('LocalVarDecStm('LocalVarDec(Ks:KList))
-//      => 'LocalVarDec(Ks)
-//    )                                                   [structural]
-//   'LocalVarDecStm('LocalVarDec(Ks:KList))
-//      => 'LocalVarDec(Ks)                                 [macro]
-
 //@ Resolve the local var type, required to register the var in <elabEnv>
 //context elab('LocalVarDecStm('LocalVarDec(_:K,, HOLE,, _:K)))
-//context elab('BlockStmList('LocalVarDecStm('LocalVarDec(_:K,, HOLE,, _:K)),, _:K))
-context elab('LocalVarDecStm('LocalVarDec(_:K,, HOLE,, _:K)))
-//context elab('LocalVarDecStm(HOLE))
-
-//rule [desugar-LocalVarDec-with-init-macro-debug2]:
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])),, Rest:BlockStmList)
-//        'LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
-//      =>
-//        Debugs
-//when
-//    getKLabel(InitExp) =/=KLabel 'ArrayInit             [macro, anywhere]
-
-//rule [a]:
-//    elab('BlockStmList('LocalVarDecStm(_),, _)) => Debugs
-//    elab('BlockStmList('LocalVarDecStm(_),, 'BlockStmList(_,, _))) => Debugs
-//    elab('BlockStmList('LocalVarDecStm(_),, Rest:BlockStmList)) => Debugs
-
-//rule [desugar-LocalVarDec-with-init-macro-debug]:
-//        'BlockStmList('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)]),, Rest:BlockStmList)
-//        'BlockStmList('LocalVarDecStm(_),, Rest:BlockStmList)
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, _,, [_])),, Rest:BlockStmList)
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, _,, [_])),, Rest:BlockStmList)
-//        'LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])
-//      =>
-//        Debugs [macro, anywhere]
-//when
-//    getKLabel(InitExp) =/=KLabel 'ArrayInit             [macro, anywhere]
- 
-//*rule [desugar-LocalVarDec-with-init-macro-debug]:
-//        'BlockStmList('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)]),, 'BlockStmList(El:K,, Rest:K))
-//        'BlockStmList('LocalVarDec(K:K,, T:K,, [_:K]),, 'BlockStmList(El:K,, Rest:K))
-//        'BlockStmList('LocalVarDec(K,, T:K,, [_:K]),, 'BlockStmList(El:K,, Rest:K))
-//        'BlockStmList('LocalVarDec(_,, _,, _),, 'BlockStmList(_,, _))
-//          'BlockStmList('LocalVarDec(_,, _,, _),, _)
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])),, 'BlockStmList(El:K,, Rest:K))
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id,,InitExp:K)])),, 'BlockStmList(El:K,, Rest:K))
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, [_:K])),, 'BlockStmList(El:K,, Rest:K))
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, _)),, 'BlockStmList(El,, Rest))
-//*        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, ['VarDec(X:Id,,InitExp:K)])),, 'BlockStmList(El:K,, Rest:K))
-//          'BlockStmList('LocalVarDecStm('LocalVarDec(_,, _,, _)),, _)
-//          'LocalVarDec(_,, _,, _)
-//        'BlockStmList(_:K,, 'BlockStmList(El:K,, Rest:K))
-//*      =>
-//        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T,, ['VarDec(X)])),, 'BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, 'BlockStmList(El,, Rest)))
-//*        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T,, ['VarDec(X)])),, 'BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, 'BlockStmList(El,, Rest)))
-//*when
-//*    getKLabel(InitExp) =/=KLabel 'ArrayInit             [macro]
+context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [desugar-LocalVarDec-with-init-macro]:
         'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, ['VarDec(X:Id,,InitExp:K)])),, 'BlockStmList(El:K,, Rest:K))
@@ -121,22 +66,21 @@ rule [desugar-LocalVarDec-multi-macro]:
         'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, [Var1])),, 'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, [Var2,, VarDecs])),, 'BlockStmList(El,, Rest)))
         [macro]
 
-rule [elab-LocalVarDec]:
-    <k>
-      elab('LocalVarDecStm('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id)])))
-      => elabRes('LocalVarDecStm('LocalVarDec(K,, T,, ['VarDec(X)])))
-      ...
-    </k>
-    <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
+rule [desugar-For-LocalVarDec-macro]:
+        'For('LocalVarDec(K:K,, T:K,, [Init:KList]),, A,, B,, C)
+      =>
+        'Block('BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, [Init])),, 'BlockStmList('For(.Exps,, A,, B,, C),, .BlockStmList)))
+      [macro]
 
-/*rule [elab-LocalVarDec]:
+
+rule [elab-LocalVarDec]:
     <k>
       elab('LocalVarDec(K:K,, T:Type,, ['VarDec(X:Id)]))
       => elabRes('LocalVarDec(K,, T,, ['VarDec(X)]))
       ...
     </k>
     <elabEnv> ListItem(mapWrap((. => X |-> T) _)) ...</elabEnv>
-*/
+
 //@\subsection{Elaboration of SuperConstrInv, QSuperConstrInv, AltConstrInv}
 
 // 'SuperConstrInv( _:K,, [ Args:KList ] )

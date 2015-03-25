@@ -39,7 +39,7 @@ rule [BlockStmList]:
 //    'BlockStmList([A:KList],, B:BlockStmList) => Debug
 //    'BlockStmList(A:K,, B:BlockStmList) => Debug
 //    A:BlockStmList => Debug
-    'BlockStmList([A:K],, B:K) => Debug ~> A ~> Debug ~> B
+    'BlockStmList(A:K,, B:K) => A ~> B
 
 rule [BlockStmListEmpty]:
     .BlockStmList => .K
@@ -65,6 +65,13 @@ rule [LocalVarDec]:
     <store>... . => L |-> default(T) ...</store>
     <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
+
+//rule [matches]:
+//    'LocalVarDec(_,, T:Type,, [ 'VarDec(X) ]:KListWrap) => Debug ~> X [anywhere]
+//    'LocalVarDec(_,, T:Type,, [ 'VarDec(X:Id) ]:KListWrap) => Debug ~> X [anywhere]
+//    'LocalVarDec(_,, T:Type,, [ X:VarDecId ]:KListWrap) => Debug ~> X [anywhere]
+//    'LocalVarDec(_,, T:Type,, [ X:VarDec ]:KListWrap) => Debug ~> X [anywhere]
+//   T:Type X:Id; => Debug ~> X [anywhere]
 
 //@ \subsection{Empty statement} JLS \$14.6
 
@@ -151,16 +158,6 @@ rule [Switch]:
     (switch(T:TypedVal) { S:SwitchGroupList TrailingLabels:SwitchLabelList })
     => switchImpl(T, addToEnd(S, 'SwitchGroup(TrailingLabels,, .BlockStmList)), .BlockStmList, .SwitchGroupList)
     ~> switchEnd
-
-/*rule [Switch2]:
-//    (switch(T:TypedVal) { S:SwitchGroupList TrailingLabels:K })
-//    ('Switch(T:TypedVal,, 'SwitchBlock(_,, A:SwitchLabelList)))
-//    (switch(T:TypedVal) { A:K B })
-//    (switch(T:TypedVal) { 'SwitchGroupList(A,, C) B })
-//    (switch(T:TypedVal) { A:SwitchGroupList B })
-//S:SwitchGroupList TrailingLabels:K )
-    => Debug ~> A ~> Debug
-*/
 
 /*@ The type associated to V and V2 is not important for match, only the value.
 JLS3 \$14.11, page 377: Every case constant expression associated with
