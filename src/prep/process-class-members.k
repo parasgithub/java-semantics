@@ -426,7 +426,8 @@ rule [InstanceInit]:
 Followed by a static initializer block, if this field is not a compile-time constant.*/
 rule [FieldDec-StaticInit-Desugar]:
     'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
-    ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
+    ~> (. => 'StaticInit('Block('BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, .BlockStmList))))
+//    ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K staticCT)
@@ -448,7 +449,7 @@ when
 
 
 rule [StaticInit-Save]:
-    <k> 'StaticInit(K:K) => . ...</k>
+    <k> 'StaticInit('Block('BlockStmList(K:K,, .BlockStmList))) => . ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
     <staticInit> [_,,(.KList => K)] </staticInit>
