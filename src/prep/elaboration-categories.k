@@ -209,7 +209,7 @@ rule defaultElabHeating('Id) => true*/
 
 //Auxiliary functions that should be default-heated
 rule defaultElabHeating('stmtAndExp) => true
-rule defaultElabHeating('CatchClauses) => true
+rule defaultElabHeating('CatchClauseList) => true
 rule defaultElabHeating('SwitchGroupList) => true
 rule defaultElabHeating('SwitchLabelList) => true
 //rule defaultElabHeating('BlockStmList) => true

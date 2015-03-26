@@ -39,14 +39,14 @@ syntax Exps         ::= List{Exp, ","} [seqstrict]
 syntax Dims         ::= List{Dim,""} // [klabel('DimList)]
 syntax DimExps      ::= List{DimExp,""} [strict]
 syntax VarInits     ::= List{VarInit, ","} // [klabel('VarInitList)]
-syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauses), strict]
+syntax CatchClauses ::= List{CatchClause,""} [klabel('CatchClauseList), strict]
 syntax Params       ::= List{Param, ","}
 
 syntax KLabel::= "'DimList"
                | "'DimExprList"
                | "'ExprList"
                | "'VarInitList"
-               | "'CatchClauses"
+               | "'CatchClauseList"
                | "'FormalParamList"
 
 syntax UserList     ::= BlockStmList
