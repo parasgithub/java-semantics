@@ -145,7 +145,6 @@ syntax KLabel ::=
                 | "'Catch"*/
 //                | "'LocalVarDecStm"
                 //| "'LocalVarDec"
-                /*| "'Block"*/
                 //| "'ClassDecStm"
                 | "'MethodDec"
                 | "'MethodDecHead"

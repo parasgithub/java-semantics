@@ -108,8 +108,6 @@ rule defaultElabHeating('ConstrBody) => true*/
 rule defaultElabHeating('AltConstrInv) => true
     /*orBool (KL ==KLabel 'SuperConstrInv)*/
 rule defaultElabHeating('QSuperConstrInv) => true
-    /*orBool (KL ==KLabel 'StaticInit)
-rule defaultElabHeating('InstanceInit) => true*/
 rule defaultElabHeating('Empty) => true
 rule defaultElabHeating('Labeled) => true
 rule defaultElabHeating('ExprStm) => true

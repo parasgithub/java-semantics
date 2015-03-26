@@ -121,8 +121,6 @@ syntax KLabel ::=
                 | "'AltConstrInv"
 //                | "'SuperConstrInv"
                 | "'QSuperConstrInv"
-//                | "'StaticInit"
-//                | "'InstanceInit"
                 | "'Empty"
                 | "'Labeled"
                 | "'ExprStm"
