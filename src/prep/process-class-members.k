@@ -427,6 +427,7 @@ Followed by a static initializer block, if this field is not a compile-time cons
 rule [FieldDec-StaticInit-Desugar]:
     'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
+//    ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K staticCT)

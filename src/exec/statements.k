@@ -35,10 +35,6 @@ rule [Block]:
         [structural]
 
 rule [BlockStmList]:
-//    'BlockStmList(A:KListWrap,, B:BlockStmList) => A ~> B
-//    'BlockStmList([A:KList],, B:BlockStmList) => Debug
-//    'BlockStmList(A:K,, B:BlockStmList) => Debug
-//    A:BlockStmList => Debug
     'BlockStmList(A:K,, B:K) => A ~> B
 
 rule [BlockStmListEmpty]:

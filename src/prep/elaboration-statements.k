@@ -29,6 +29,16 @@ rule [elab-Block-For-Catch-heat-FirstSubterm]:
 when
     isVarDecHolderLabel(KL) ==K true andBool notBool isElabKResult(K) ==K true
 
+rule [testing]:
+//    elab('Block(K:K,, Ks:KList)) => 'Block(K:K,, Ks:KList) ~> Debugs)
+    <k> elab('Block(K:K,, Ks:KList)) => elab(K) ~> elab('Block(CHOLE,, Ks:KList))...</k>
+    <elabEnv> (. => ElabEnvLI) ElabEnvLI:ListItem ...</elabEnv>
+    <localTypes> (. => LocalTypesLI) LocalTypesLI:ListItem ...</localTypes>
+    <debug> (. => ('Block(K,, Ks))) ...</debug>
+//    elab('Block(K:K,, Ks:KList)) => (Debugs ~> 'Block(K:K,, Ks:KList) ~> Debugs)
+when
+    notBool isElabKResult(K) ==K true [macro]
+
 //Seqstrict starting from 2-nd argument.
 // Having three terms in the KList in the second argument ensures that
 // the list is at least of length 2.

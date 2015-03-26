@@ -37,9 +37,8 @@ rule [staticInit]:
             //catch clause of 'Try
 
                 catch(.AnnoVarModList classObject String2Id("e"))
-      //because currently there is no rule for executing BlcokStmList, we have to use 'Block for now
-                'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
-                (((classObject) String2Id("e")));)
+                'Block('BlockStmList(throw new class String2Id("java.lang.ExceptionInInitializerError")
+                (((classObject) String2Id("e"))); ,, .BlockStmList))
                 .CatchClauses
 
             ,,

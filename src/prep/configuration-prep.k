@@ -168,7 +168,7 @@ During the elaboration phase no cells are consumed. Instead, the code blocks sto
 configuration
     <T>
       //Initial cells, loaded by krun and initial configuration.
-
+      <debug> .K </debug>
       <k color="Green"> $PGM:K </k>
 
       //The initial program loaded by krun. For full mode and preprocessing this is
