@@ -117,7 +117,6 @@ syntax KLabel ::=
 //                | "'ExtendsInterfaces"
 //                | "'ConstrDec"
 //                | "'ConstrDecHead"
-//                | "'ConstrBody"
                 | "'AltConstrInv"
 //                | "'SuperConstrInv"
                 | "'QSuperConstrInv"

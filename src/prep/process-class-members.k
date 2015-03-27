@@ -2,7 +2,7 @@ module PROCESS-CLASS-MEMBERS
     imports CORE-SORTS
     imports CORE-CLASSES
     imports CORE-PREPROCESSING
-
+    imports ELABORATION-STATEMENTS
 /*@ \subsection{Third pass - processing class members} */
 
 /*@ We need to process Object first. Thus when we will process any interfaces,
@@ -372,17 +372,17 @@ rule [ConstrDec]:
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
           instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
-          'Block(
+/*          'Block(
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
             #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
               #then 'BlockStmList('ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList])),, BodyKs)
-              #else 'BlockStmList(BodyKs,, .BlockStmList) //vacuous
+              #else BodyKs //vacuous
             #fi
           ),
-  
- /*         'Block([
+*/
+          'Block([
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
@@ -391,7 +391,7 @@ rule [ConstrDec]:
               #else [.KList] //vacuous
             #fi,,
             BodyKs
-          ]), */
+          ]),
           sig(getConsName(Class), getTypes([Params])), void)
       ...
     </k>
