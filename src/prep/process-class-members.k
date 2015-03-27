@@ -372,7 +372,17 @@ rule [ConstrDec]:
         'Some(FirstLine:K) ,,[BodyKs:KList]))
       => storeMethod([Params],
           instanceCT, getAccessMode(Modifiers), isSynchronizedModifiers(Modifiers), constructorMMT, FirstLine,
-          'Block([
+          'Block(
+
+            //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
+            //Invocation of instance initializer converted into a method.
+            #if getKLabel(FirstLine) ==KLabel 'SuperConstrInv orBool getKLabel(FirstLine) ==KLabel 'QSuperConstrInv
+              #then 'BlockStmList('ExprStm('Invoke('Method('MethodName( String2Id("$instance_init") )),, [.KList])),, BodyKs)
+              #else 'BlockStmList(BodyKs,, .BlockStmList) //vacuous
+            #fi
+          ),
+  
+ /*         'Block([
 
             //Performance problem - the #if below adds 3s of execution to helloWorld, 25s total, Windows.
             //Invocation of instance initializer converted into a method.
@@ -381,7 +391,7 @@ rule [ConstrDec]:
               #else [.KList] //vacuous
             #fi,,
             BodyKs
-          ]),
+          ]), */
           sig(getConsName(Class), getTypes([Params])), void)
       ...
     </k>
@@ -427,7 +437,6 @@ Followed by a static initializer block, if this field is not a compile-time cons
 rule [FieldDec-StaticInit-Desugar]:
     'FieldDec(Modifiers:KListWrap,, T:Type,, ['VarDec(X:Id,,(InitExp:K => .KList)) ])
     ~> (. => 'StaticInit('Block('BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, .BlockStmList))))
-//    ~> (. => 'StaticInit('ExprStm('Assign('ExprName(X),, InitExp))))
 when
             (getKLabel(InitExp) =/=KLabel 'ArrayInit)
     andBool (getContextType(Modifiers) ==K staticCT)

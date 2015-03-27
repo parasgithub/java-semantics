@@ -94,7 +94,6 @@ I change back to the stupid way temproraily, because that would ease single remo
 //rule '.List`{"`,"`}(.KList) => [.KList]                             [macro]
 //rule 'SwitchLabelList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
 //rule 'SwitchGroupList(Hd,,[Tl:KList])           => [Hd,,Tl]         [macro]
-//rule 'BlockStmList(Hd,,[Tl:KList])              => [Hd,,Tl]         [macro]
 //rule 'InterfaceTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
 //rule 'ExceptionTypeList(Hd,,[Tl:KList])         => [Hd,,Tl]         [macro]
 //rule 'IdList(Hd,,[Tl:KList])                    => [Hd,,Tl]         [macro]
