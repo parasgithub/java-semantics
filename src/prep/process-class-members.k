@@ -447,12 +447,17 @@ when
     getContextType(Modifiers) ==K staticCT
         [structural]
 
-
 rule [StaticInit-Save]:
-    <k> 'StaticInit('Block('BlockStmList(K:K,, .BlockStmList))) => . ...</k>
+    <k> ('StaticInit('Block('BlockStmList(K:K,, Rest))) => .K) ...</k>
     <crntClass> Class:ClassType </crntClass>
     <classType> Class </classType>
-    <staticInit> [_,,(.KList => K)] </staticInit>
+    <staticInit> [_,,(.KList => 'Block('BlockStmList(K,, Rest)))] </staticInit>
+        [structural]
+
+rule [StaticInit-Save]:
+    <k> 'StaticInit('Block(.BlockStmList)) => . ...</k>
+    <crntClass> Class:ClassType </crntClass>
+    <classType> Class </classType>
         [structural]
 
 

@@ -34,15 +34,12 @@ rule [Block]:
     <env> Env </env>
         [structural]
 
-rule [BlockStmList]:
-//    'BlockStmList(A:KListWrap,, B:BlockStmList) => A ~> B
-//    'BlockStmList([A:KList],, B:BlockStmList) => Debug
-//    'BlockStmList(A:K,, B:BlockStmList) => Debug
-//    A:BlockStmList => Debug
-    'BlockStmList(A:K,, B:K) => A ~> B
+//@ Executes a list of statements inside a block
+//rule [BlockStmList]:
+//    'BlockStmList(A:K,, B:K) => A ~> B
 
-rule [BlockStmListEmpty]:
-    .BlockStmList => .K
+//rule [BlockStmListEmpty]:
+//    'BlockStmList(_:K) => .K
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
 syntax KItem ::= env ( Map )
@@ -173,7 +170,10 @@ by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
 
 rule [executeBlockStmList]:
-    'BlockStmList(Hd,,Tl:BlockStmList) => (Hd ~> Tl)
+    'BlockStmList(Hd,, Tl) => (Hd ~> Tl)
+
+rule [executeEmptyList]:
+    .BlockStmList => .K
 
 rule [executeSwitchGroupList]:
     'SwitchGroupList(Hd,,Tl:SwitchGroupList) => (Hd ~> Tl)

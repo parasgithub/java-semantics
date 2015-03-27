@@ -111,6 +111,7 @@ rule [unfolding-class-members-except-methods]:
         ),,
         'ClassBody( [
             ( StaticFields:KList,,
+              // StaticInit is a BlockStmt
               'StaticInit('Block(StaticInit:KList)),, //this particular construct assures that
                                                       //this rule will match in the right moment
               InstanceFields:KList

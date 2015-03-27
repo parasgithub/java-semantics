@@ -28,18 +28,20 @@ rule [staticInit]:
     <k>
       staticInit(Class:ClassType)
       => [
-        StaticFields,, //Static fields have to be allocated before base class is statically initialized,
+        StaticFields,, // Static fields have to be allocated before base class is statically initialized,
                        // because during base class initialization those fields might be accessed.
         staticInit(BaseClass),,
         'Try(
             StaticInit,,
 
-            //catch clause of 'Try
+            // catch clause of 'Try
 
                 catch(.AnnoVarModList classObject String2Id("e"))
-      //because currently there is no rule for executing BlcokStmList, we have to use 'Block for now
+                // because currently there is no rule for executing BlockStmList, we have to use 'Block for now
                 'Block(throw new class String2Id("java.lang.ExceptionInInitializerError")
                 (((classObject) String2Id("e")));)
+//                'Block('BlockStmList(throw new class String2Id("java.lang.ExceptionInInitializerError")
+//                (((classObject) String2Id("e")));,, .BlockStmList))
                 .CatchClauses
 
             ,,
