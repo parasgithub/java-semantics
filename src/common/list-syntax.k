@@ -155,12 +155,6 @@ rule    'MethodDecHead(('.List`{""`}(.KList) => [.KList]),,_) [macro]
 rule    'MethodDecHead(_,,('FormalParamList(Params) => toKListWrap('FormalParamList(Params))),,_) [macro]
 rule    'MethodDecHead(_,,('.List`{"`,"`}(.KList) => [.KList]),,_) [macro]
 
-//"{" BlockStmList "}" -> Block {cons("Block")}
-//rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [macro]
-//rule    'Block('BlockStmList(B) => toKListWrap('BlockStmList(B))) [anywhere]
-//rule    'Block(('.List`{""`}(.KList) => [.KList])) [macro]
-//rule    'Block(('.List`{""`}(.KList) => [.KList])) [anywhere]
-
 //MethodSpec "(" ExprList ")" -> Expr {cons("Invoke")}
 rule    'Invoke(_,,('ExprList(Exps) => toKListWrap('ExprList(Exps)))) [macro]
 rule    'Invoke(_,,('.List`{"`,"`}(.KList) => [.KList])) [macro]

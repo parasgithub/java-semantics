@@ -17,9 +17,6 @@ syntax KItem ::= toBlockStmList(KListWrap, K) [function]
 rule toBlockStmList([Blocks:KList,, El:K], Rest) => toBlockStmList([Blocks], 'BlockStmList(El,, Rest))
 rule toBlockStmList([.KList], Rest) => Rest
 
-//rule toBlockStmList([El:K,, BlockStmts:KList], Rest) => toBlockStmList([BlockStmts], 'BlockStmList(El,, Rest))
-//rule toBlockStmList([.KList], Rest) => Rest
-
 /*So far top-level classes only.*/
 rule [folding-start]:
     <k> foldingPhase </k>
@@ -45,7 +42,6 @@ rule [folding-start]:
               ),,
               'ClassBody( [
                   StaticFields,,
-//                  'StaticInit('Block(StaticInit)),,
                   'StaticInit('Block(toBlockStmList([StaticInit], .BlockStmList))),,
                   InstanceFields
                   //instanceInit was converted into method, is not needed here.

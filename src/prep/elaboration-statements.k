@@ -54,16 +54,16 @@ rule [sequentialHeating]:
 context elab('LocalVarDec(_:K,, HOLE,, _:K))
 
 rule [desugar-LocalVarDec-with-init-macro]:
-        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, ['VarDec(X:Id,,InitExp:K)])),, 'BlockStmList(El:K,, Rest:K))
+       'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, ['VarDec(X:Id,,InitExp:K)])),, Rest)
       =>
-        'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, ['VarDec(X)])),, 'BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, 'BlockStmList(El,, Rest)))
+       'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, ['VarDec(X)])),, 'BlockStmList('ExprStm('Assign('ExprName(X),, InitExp)),, Rest))
 when
     getKLabel(InitExp) =/=KLabel 'ArrayInit             [macro]
     
 rule [desugar-LocalVarDec-multi-macro]:
-        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, [Var1:K,, Var2:K,, VarDecs:KList])),, 'BlockStmList(El:K,, Rest:K))
+        'BlockStmList('LocalVarDecStm('LocalVarDec(K:K,, T:K,, [Var1:K,, Var2:K,, VarDecs:KList])),, Rest)
       =>
-        'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, [Var1])),, 'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, [Var2,, VarDecs])),, 'BlockStmList(El,, Rest)))
+        'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, [Var1])),, 'BlockStmList('LocalVarDecStm('LocalVarDec(K,, T,, [Var2,, VarDecs])),, Rest))
         [macro]
 
 rule [desugar-For-LocalVarDec-macro]:

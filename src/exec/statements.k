@@ -35,11 +35,12 @@ rule [Block]:
         [structural]
 
 //@ Executes a list of statements inside a block
-//rule [BlockStmList]:
-//    'BlockStmList(A:K,, B:K) => A ~> B
 
-//rule [BlockStmListEmpty]:
-//    'BlockStmList(_:K) => .K
+rule [executeBlockStmList]:
+    'BlockStmList(Hd,, Tl) => (Hd ~> Tl)
+
+rule [executeEmptyList]:
+    .BlockStmList => .K
 
 //@ \texttt{env} Restore the env cell content from env(...) statement argument
 syntax KItem ::= env ( Map )
@@ -62,13 +63,6 @@ rule [LocalVarDec]:
     <store>... . => L |-> default(T) ...</store>
     <storeMetadata>... . => L |-> LocalLocMetadata ...</storeMetadata>
     <nextLoc> L:Int => L +Int 1 </nextLoc>
-
-//rule [matches]:
-//    'LocalVarDec(_,, T:Type,, [ 'VarDec(X) ]:KListWrap) => Debug ~> X [anywhere]
-//    'LocalVarDec(_,, T:Type,, [ 'VarDec(X:Id) ]:KListWrap) => Debug ~> X [anywhere]
-//    'LocalVarDec(_,, T:Type,, [ X:VarDecId ]:KListWrap) => Debug ~> X [anywhere]
-//    'LocalVarDec(_,, T:Type,, [ X:VarDec ]:KListWrap) => Debug ~> X [anywhere]
-//   T:Type X:Id; => Debug ~> X [anywhere]
 
 //@ \subsection{Empty statement} JLS \$14.6
 
@@ -168,12 +162,6 @@ rule [switchImpl-CaseNotMatch]:
 /*@Once case of first switch group matches, the whole switch is replaced
 by it's block. The execution rules for switch will discard switch-related
 constructs and will execute the statements. */
-
-rule [executeBlockStmList]:
-    'BlockStmList(Hd,, Tl) => (Hd ~> Tl)
-
-rule [executeEmptyList]:
-    .BlockStmList => .K
 
 rule [executeSwitchGroupList]:
     'SwitchGroupList(Hd,,Tl:SwitchGroupList) => (Hd ~> Tl)
